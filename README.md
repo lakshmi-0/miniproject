@@ -1,0 +1,2 @@
+# miniproject
+curry sales system
