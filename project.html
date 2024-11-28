@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House of Curries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://c8.alamy.com/comp/2F5B8WA/traditional-indian-foods-arranged-as-collage-of-the-cuisine-2F5B8WA.jpg');
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: black;
+        }
+        .button-group button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-group button:hover {
+            background-color: #218838;
+        }
+        .form-group {
+            display: none;
+            margin-bottom: 15px;
+        }
+        label {
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .history-table th, .history-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .history-table th {
+            background-color: #f4f4f9;
+        }
+        .history-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .print-button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HOUSE OF CURRIES</h1>
+        <div class="button-group">
+            <button onclick="toggleForm('morningForm')">Morning Stock</button>
+            <button onclick="toggleForm('eveningForm')">Evening Stock</button>
+            <button onclick="toggleForm('historyForm')">Retrieve History</button>
+        </div>
+
+        <!-- Morning Stock Form -->
+        <div class="form-group" id="morningForm">
+            <h2>Morning Stock</h2>
+            <label for="morningDate">Date:</label>
+            <input type="date" id="morningDate">
+            <label for="morningPlace">Place:</label>
+            <select id="morningPlace">
+                <option value="Old City">Old City</option>
+                <option value="Miyapur">Miyapur</option>
+                <option value="Gachibowli">Gachibowli</option>
+            </select>
+            <label for="morningCurryType">Curry Type:</label>
+            <select id="morningCurryType" onchange="updateCurryOptions('morningCurry', this.value)">
+                <option value="">--Select--</option>
+                <option value="Veg">Veg</option>
+                <option value="NonVeg">NonVeg</option>
+                <option value="Starters">Starters</option>
+            </select>
+            <label for="morningCurry">Curry:</label>
+            <select id="morningCurry">
+                <option value="">--Select--</option>
+            </select>
+            <label for="morningStock">Stock (kg):</label>
+            <input type="number" id="morningStock" placeholder="Enter Stock">
+            <button onclick="addMorningStock()">Add Stock</button>
+            <h3>Morning Stock Table</h3>
+            <table id="morningStockTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Curry</th>
+                        <th>Stock (kg)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button class="print-button" onclick="printTable('Morning Stock', 'morningDate', 'morningPlace', 'morningStockTable')">Print Morning Stock</button>
+        </div>
+
+        <!-- Evening Stock Form -->
+        <div class="form-group" id="eveningForm">
+            <h2>Evening Stock</h2>
+            <label for="eveningDate">Date:</label>
+            <input type="date" id="eveningDate">
+            <label for="eveningPlace">Place:</label>
+            <select id="eveningPlace">
+                <option value="Old City">Old City</option>
+                <option value="Miyapur">Miyapur</option>
+                <option value="Gachibowli">Gachibowli</option>
+            </select>
+            <button onclick="displayEveningStock()">Display Morning Stock</button>
+            <h3>Evening Stock Table</h3>
+            <table id="eveningStockTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Curry</th>
+                        <th>Morning Stock (kg)</th>
+                        <th>Leftover (kg)</th>
+                        <th>No. of Units</th>
+                        <th>Price (₹/kg)</th>
+                        <th>Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+ <button onclick="saveEveningStock()">Save Evening Stock</button>
+            <p>Total Amount: ₹<span id="grandTotal">0.00</span></p>
+            <button class="print-button" onclick="printTable('Evening Stock', 'eveningDate', 'eveningPlace', 'eveningStockTable')">Print Evening Stock</button>
+        </div>
+
+        <!-- Stock History Form -->
+        <div class="form-group" id="historyForm">
+            <h2>Stock History</h2>
+            <label for="historyDate">Date:</label>
+            <input type="date" id="historyDate">
+            <label for="historyPlace">Place:</label>
+            <select id="historyPlace">
+                <option value="Old City">Old City</option>
+                <option value="Miyapur">Miyapur</option>
+                <option value="Gachibowli">Gachibowli</option>
+            </select>
+            <button onclick="retrieveHistory()">Retrieve History</button>
+            <h3>History Table</h3>
+            <table id="historyTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Curry</th>
+                        <th>Leftover (kg)</th>
+                        <th>No. of Units</th>
+                        <th>Price (₹/kg)</th>
+                        <th>Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const curryOptions = {
+            Veg: ["Brinjal Curry", "Potato Curry", "Lady Finger Curry", "Cabbage Fry", "Paneer Curry"],
+            NonVeg: ["Chicken Curry", "Mutton Curry", "Fish Curry", "Prawns Curry", "Liver Fry"],
+            Starters: ["Veg Spring Roll", "Cashew Fry", "Leg Piece", "Chicken Tikka"]
+        };
+
+        const stockData = {};
+
+        function toggleForm(formId) {
+            document.querySelectorAll(".form-group").forEach(form => form.style.display = "none");
+            document.getElementById(formId).style.display = "block";
+        }
+
+        function updateCurryOptions(selectId, type) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">--Select--</option>';
+            if (curryOptions[type]) {
+                curryOptions[type].forEach(curry => {
+                    const option = document.createElement("option");
+                    option.value = curry;
+                    option.textContent = curry;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        function addMorningStock() {
+            const date = document.getElementById("morningDate").value;
+            const place = document.getElementById("morningPlace").value;
+            const curry = document.getElementById("morningCurry").value;
+            const stock = parseFloat(document.getElementById("morningStock").value);
+
+            if (!date || !place || !curry || isNaN(stock) || stock <= 0) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+
+            const table = document.getElementById("morningStockTable").querySelector("tbody");
+            const row = table.insertRow();
+            row.insertCell(0).textContent = curry;
+            row.insertCell(1).textContent = stock;
+
+            // Store data
+            if (!stockData[date]) stockData[date] = {};
+            if (!stockData[date][place]) stockData[date][place] = [];
+            stockData[date][place].push({ curry, stock });
+        }
+
+        function displayEveningStock() {
+            const date = document.getElementById("eveningDate").value;
+            const place = document.getElementById("eveningPlace").value;
+
+            if (!date || !place) {
+                alert("Please select date and place.");
+                return;
+            }
+
+            const morningData = (stockData[date] && stockData[date][place]) || [];
+            const table = document.getElementById("eveningStockTable").querySelector("tbody");
+            table.innerHTML = "";
+
+            morningData.forEach(item => {
+                const row = table.insertRow();
+                row.insertCell(0).textContent = item.curry;
+                row.insertCell(1).textContent = item.stock;
+                row.insertCell(2).innerHTML = `<input type="number" placeholder="Leftover (kg)" oninput="calculateAmount(this)">`;
+                row.insertCell(3).innerHTML = `<input type="number" placeholder="No. of Units" oninput="calculateAmount(this)">`;
+                row.insertCell(4).innerHTML = `<input type="number" placeholder="Price (₹)" oninput="calculateAmount(this)">`;
+                row.insertCell(5).textContent = "0.00";
+            });
+        }
+
+      function calculateAmount(input) {
+    const row = input.closest("tr");
+    
+    // Retrieve values from the respective columns
+    const leftover = parseFloat(row.cells[2].querySelector("input").value) || 0; // Leftover (kg)
+    const unitsPerPacket = parseFloat(row.cells[3].querySelector("input").value) || 0; // Units per packet
+    const price = parseFloat(row.cells[4].querySelector("input").value) || 0; // Price per kg
+    const morningStock = parseFloat(row.cells[1].textContent) || 0; // Morning stock (kg)
+
+    // Calculate Total Quantity, Number of Packets, and Total Price
+    const totalQuantity = morningStock - leftover;
+    const numPackets = (totalQuantity * 1000) / unitsPerPacket;
+    const totalPrice = numPackets * price;
+
+    // Update the Amount column
+    row.cells[5].textContent = totalPrice.toFixed(2);
+
+    // Update the Grand Total
+    updateGrandTotal();
+}
+function saveEveningStock() {
+    const date = document.getElementById("eveningDate").value;
+    const place = document.getElementById("eveningPlace").value;
+    const tableRows = document.querySelectorAll("#eveningStockTable tbody tr");
+
+    if (!date || !place) {
+        alert("Please provide date and place before saving.");
+        return;
+    }
+
+    stockData[date] = stockData[date] || {};
+    stockData[date][place] = [];
+
+    tableRows.forEach(row => {
+        const curry = row.cells[0].textContent;
+        const leftover = parseFloat(row.cells[2].querySelector("input").value) || 0;
+        const units = parseFloat(row.cells[3].querySelector("input").value) || 0;
+        const price = parseFloat(row.cells[4].querySelector("input").value) || 0;
+        const amount = parseFloat(row.cells[5].textContent) || 0;
+
+        stockData[date][place].push({ curry, leftover, units, price, amount });
+    });
+
+    alert("Evening stock saved successfully!");
+}
+
+
+        function updateGrandTotal() {
+            const rows = document.querySelectorAll("#eveningStockTable tbody tr");
+            let grandTotal = 0;
+
+            rows.forEach(row => {
+                const amount = parseFloat(row.cells[5].textContent) || 0;
+                grandTotal += amount;
+            });
+
+            document.getElementById("grandTotal").textContent = grandTotal.toFixed(2);
+        }
+
+        function printTable(title, dateId, placeId, tableId) {
+            const date = document.getElementById(dateId).value || "Not Selected";
+            const place = document.getElementById(placeId).value || "Not Selected";
+            const tableHTML = document.getElementById(tableId).outerHTML;
+
+            const newWindow = window.open("", "_blank");
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        h1, h2 { text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        th { background-color: #f4f4f9; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <p><strong>Date:</strong> ${date}</p>
+                    <p><strong>Place:</strong> ${place}</p>
+                    ${tableHTML}
+                </body>
+                </html>
+            `);
+            newWindow.document.close();
+            newWindow.print();
+        }
+
+      function retrieveHistory() {
+    const date = document.getElementById("historyDate").value;
+    const place = document.getElementById("historyPlace").value;
+
+    if (!date || !place) {
+        alert("Please select date and place.");
+        return;
+    }
+
+    const historyData = (stockData[date] && stockData[date][place]) || [];
+    const table = document.getElementById("historyTable").querySelector("tbody");
+    table.innerHTML = "";
+
+    historyData.forEach(item => {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = item.curry;
+        row.insertCell(1).textContent = item.leftover || "N/A";
+        row.insertCell(2).textContent = item.units || "N/A";
+        row.insertCell(3).textContent = item.price || "N/A";
+        row.insertCell(4).textContent = item.amount || "N/A";
+    });
+}
+    </script>
+</body>
+</html>
